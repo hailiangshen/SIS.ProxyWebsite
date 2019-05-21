@@ -1,12 +1,21 @@
 const proxy = require('http-proxy-middleware');
+var fs = require('fs');
+var path = require('path');
 
-const config = require('./api-address-config.js');
+// const config = require('./api-address-config.js');
+const config = ((dirArr) => {
+	let dir = dirArr.find(x => fs.existsSync(path.resolve(__dirname, x)));
+	if (dir) {
+		return require(dir);
+	}
+	throw `未找到代理配置文件`;
+})(['./api-address-config-local.js', './api-address-config.js']);
 
 var opt = {
     target: config.netApiHost,
     changeOrigin: true,
     router: {
-        '/api/': 'http://localhost:49648',
+        '/api/': config.netApiHost,
         '/sisjava/': config.javaApiHost,
         '/newsis': config.vueHost,
     },
